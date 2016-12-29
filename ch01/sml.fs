@@ -10,6 +10,7 @@ and exp = IdExp of id
         | OpExp of exp * binop * exp
         | EseqExp of stm * exp
 
+type table = (string * int ) list
 
 
 let eval x y = function
@@ -19,3 +20,14 @@ let eval x y = function
   | Times -> x * y
 
 
+
+  let rec lookup value (mytable : table) =
+    match mytable with 
+      | [] -> None
+      | (s,i)::tail -> if  s = value then 
+                        Some i 
+                        else
+                        lookup value tail  
+
+let test_lookup =
+  let table = [("a", 1), ["b", 2]]
