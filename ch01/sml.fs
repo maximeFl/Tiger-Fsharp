@@ -21,14 +21,28 @@ let eval x y = function
 
 
 
-  let rec lookup value (mytable : table) =
-    match mytable with 
-      | [] -> None
-      | (s,i)::tail -> if  s = value then 
-                        Some i 
-                        else
-                        lookup value tail
+let rec lookup value (mytable : table) =
+  match mytable with 
+    | [] -> None
+    | (s,i)::tail -> if  s = value then 
+                       Some i 
+                     else
+                       lookup value tail
 
 let update_table (mytable : table) value_id value = 
   (value_id, value)::mytable
+
+let print_stm i (mytable: table) =
+  printfn "%i" i
+  mytable 
+
+let interpExp (exp_a: exp) (table_a: table) =
+  // exp -> tablea -> (int * table)
+  (5, ("a", 5))  
+
+
+let rec interpStm mytable = function 
+  | CompoundStm(stm_a, stm_b) -> interpStm (interpStm mytable stm_a) stm_b
+  | AssignStm(id_a, exp_a) -> update_table (interpExp exp_a mytable) id_a
+  | PrintStm stm_list -> List.fold (fun t e -> print_stm (interpExp e t))  mytable stm_list
 
