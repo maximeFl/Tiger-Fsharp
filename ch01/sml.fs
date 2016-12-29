@@ -27,7 +27,8 @@ let eval x y = function
       | (s,i)::tail -> if  s = value then 
                         Some i 
                         else
-                        lookup value tail  
+                        lookup value tail
 
-let test_lookup =
-  let table = [("a", 1), ["b", 2]]
+let update_table (mytable : table) value_id value = 
+  (value_id, value)::mytable
+
