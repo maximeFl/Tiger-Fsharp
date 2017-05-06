@@ -1,6 +1,5 @@
 type ichar = char * int
 
-
 type regexp =
   | Epsilon
   | Character of ichar
@@ -13,7 +12,6 @@ let rec Rnull = function
   | Character _ -> false
   | Union (a,b) -> Rnull a || Rnull b
   | Concat (a,b) -> Rnull a && Rnull b
-
 
 let rec first = function
   | Epsilon ->  Set.empty<ichar>
@@ -35,7 +33,6 @@ let rec last = function
                     else
                       last b
 
-
 let rec follow c = function
   | Epsilon | Character _ ->  Set.empty<ichar>
   | Star a ->  let last_a = last a 
@@ -46,3 +43,16 @@ let rec follow c = function
                     let first_b = first b 
                     if last_a.Contains c then first_b else Set.empty<ichar>
 
+let next_step r state c  =
+  let folding_function q = function 
+    | (c1,_) as c' -> if c1 = c then Set.union (follow c' r) q else q
+  Set.fold folding_function Set.empty<ichar> state  
+
+
+
+type state = Set<ichar>
+
+type autom = {
+  start : state;
+  trans : state Cmap.t Smap.t
+}
