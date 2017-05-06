@@ -41,7 +41,8 @@ let rec follow c = function
   | Union (a,b) -> Set.union (follow c a) (follow c b)
   | Concat (a,b) -> let last_a = last a 
                     let first_b = first b 
-                    if last_a.Contains c then first_b else Set.empty<ichar>
+                    let follow_a_b = Set.union (follow c a) (follow c b) 
+                    if last_a.Contains c then Set.union follow_a_b first_b else follow_a_b  
 
 let next_step r state c  =
   let folding_function q = function 
