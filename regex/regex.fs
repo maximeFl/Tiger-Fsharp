@@ -59,8 +59,8 @@ type autom = {
 
 
 let rec update f x =
-  let to_continue, new_x = f x 
-  if to_continue then update f new_x else new_x
+  let to_stop, new_x = f x 
+  if to_stop then new_x else update f new_x 
 
 let update_characters (s:state) (all_characters:Set<char>) (r:regexp) =
   Set.fold (fun trans c -> let ns =(next_step r s c)
@@ -76,7 +76,7 @@ let rec allCharacter  = function
   | Character a -> Set.singleton (fst a)
   | Union (a,b) | Concat (a,b) -> Set.union (allCharacter a) (allCharacter b)
 
-let updateAutom (trans:trans) r   = 
+let updateAutom r (trans:trans) = 
   let all_states =  Map.fold (fun a _ c -> Set.union a (Set.singleton c) ) Set.empty<state> trans
   let all_characters = allCharacter r
   let new_trans = Map.toSeq trans
@@ -88,3 +88,16 @@ let updateAutom (trans:trans) r   =
   new_trans = trans, new_trans
                   
 
+let eof = Character ('#',-1)
+
+let makeDfda r =
+  let start = first r
+  let r1 = Concat (r ,eof)
+  let trans = update_characters start (allCharacter r1) r1
+  let final_trans = update (updateAutom r1) trans
+  {start = first r; trans=final_trans; regex=r1} 
+
+
+
+let r = Concat( Union (Character ('4',1), Character ('6',1)), Character('l' , 2))
+let test  = makeDfda r 
