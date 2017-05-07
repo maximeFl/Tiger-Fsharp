@@ -70,23 +70,21 @@ let update_characters (s:state) (all_characters:Set<char>) (r:regexp) =
                             Map.add (s, c) (next_step r s c) trans)  Map.empty<state*char, state> all_characters
 
 
-let allCharacter (s:state) =
-  Set.map fst s
+let rec allCharacter  = function
+  | Epsilon -> Set.empty<char>
+  | Star a -> allCharacter a
+  | Character a -> Set.singleton (fst a)
+  | Union (a,b) | Concat (a,b) -> Set.union (allCharacter a) (allCharacter b)
 
-let updateAutom (a:autom)  = 
-  let start = a.start
-  let trans = a.trans
-  let r = a.regex
-  let all_states =  Map.fold (fun a b c -> Set.union a (Set.union (Set.singleton c) (Set.singleton (fst b)))) Set.empty<state> trans
-                    |> Set.add start
-  let all_characters = Set.toSeq all_states
-                       |>Seq.collect (fun state -> Set.map fst state |> Set.toSeq) 
-                       |>Set.ofSeq 
-  let new_trans = Set.toList all_states 
-                  |> List.map (fun state -> update_characters state all_characters r)
-                  |> List.append [a.trans]
-                  |> List.collect Map.toList
-                  |> Map.ofList
+let updateAutom (trans:trans) r   = 
+  let all_states =  Map.fold (fun a _ c -> Set.union a (Set.singleton c) ) Set.empty<state> trans
+  let all_characters = allCharacter r
+  let new_trans = Map.toSeq trans
+                  |> Seq.map snd
+                  |> Seq.map (fun state -> update_characters state all_characters r)
+                  |> Seq.append (Seq.ofList [trans])
+                  |> Seq.collect Map.toList
+                  |> Map.ofSeq
   new_trans = trans, new_trans
                   
 
