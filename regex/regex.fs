@@ -52,7 +52,7 @@ let next_step r state c  =
 type state = Set<ichar>
 type trans = Map<state*char, state>
 type autom = {
-  start : state;
+  state : state;
   trans : trans;
   regex : regexp
 }
@@ -91,13 +91,29 @@ let updateAutom r (trans:trans) =
 let eof = Character ('#',-1)
 
 let makeDfda r =
-  let start = first r
   let r1 = Concat (r ,eof)
+  let start = first r
   let trans = update_characters start (allCharacter r1) r1
   let final_trans = update (updateAutom r1) trans
-  {start = first r; trans=final_trans; regex=r1} 
+  {state = first r; trans=final_trans; regex=r1} 
 
+let rec recognize (a:autom) = function
+  | "" -> let eof = '#', -1
+          Set.contains eof a.state
+  | s -> let aceptableChar = Set.map fst a.state
+         if Set.contains  s.[0] aceptableChar then 
+          let nextState = a.trans.[(a.state,s.[0])]
+          let newA = { a with state = nextState}
+          recognize newA s.[1..]
+         else
+          false
 
+  
 
-let r = Concat( Union (Character ('4',1), Character ('6',1)), Character('l' , 2))
+let r1 = Concat( Union (Character ('4',1), Character ('6',1)), Character('l' , 2))
+let r2 = Concat( Union (Character ('4',1), Character ('6',1)), Character('l' , 2))
+
+let r3 = Star( Character ('4',1))
 let test  = makeDfda r 
+
+recognize test "a441"
